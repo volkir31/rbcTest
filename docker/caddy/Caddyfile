@@ -1,0 +1,45 @@
+localhost:80 {
+	root * /var/www/public
+
+	log
+	encode gzip
+
+	php_fastcgi php:9000
+
+    @NoAccess {
+		not path /vendor/*
+		not path /composer.json
+		not path /composer.lock
+		not path /.gitignore
+		not path /.prod.example
+	}
+
+	file_server @NoAccess browse {
+    	hide /vendor/*
+    	hide /composer.json
+    	hide /composer.lock
+    	hide /.gitignore
+    	hide /.prod.example
+    }
+
+    respond /vendor/* "403 Access denied" 403 {
+         close
+    }
+
+    respond /composer.json  "403 Access denied" 403 {
+         close
+    }
+
+    respond /composer.lock "403 Access denied" 403 {
+         close
+    }
+
+    respond /.gitignore "403 Access denied" 403 {
+         close
+    }
+
+    respond /.prod.example "403 Access denied" 403 {
+         close
+    }
+
+}

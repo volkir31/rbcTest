@@ -1,0 +1,57 @@
+services:
+#  database:
+#    container_name: db
+#    build:
+#      context: docker/postgres
+#      dockerfile: Dockerfile
+#    environment:
+#      POSTGRES_DB: ${POSTGRES_DB}
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#    volumes:
+#      - ./data:/var/lib/postgresql/data
+#      - ./docker/postgres/pg.conf:/etc/postgresql.conf
+#    env_file:
+#      - .env
+  database:
+    container_name: db
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  php:
+    container_name: php
+    build:
+      context: docker/php-fpm
+      dockerfile: Dockerfile
+    working_dir: /var/www
+    volumes:
+      - ./php:/var/www
+      - ./docker/php-fpm/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    env_file:
+      - .env
+
+
+  caddy:
+    restart: always
+    container_name: caddy
+    image: caddy:2-alpine
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./data/caddy:/data
+      - ./php:/var/www
+    ports:
+      - "80:80"
+    depends_on:
+      - php
+      - database
+    env_file:
+      - .env
